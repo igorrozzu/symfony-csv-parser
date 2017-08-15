@@ -6,12 +6,21 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * Product Entity
  *
- * @ORM\Table(name="importTest")
+ * @ORM\Table(name="importTest", uniqueConstraints={
+ *     @ORM\UniqueConstraint(name="product_code_idx", columns={"productCode"})
+ * })
  * @ORM\HasLifecycleCallbacks()
  * @ORM\Entity(repositoryClass="AppBundle\Repository\ProductRepository")
+ * @Assert\Expression(
+ *     "this.isValidCostAndStock()",
+ *     message="Cost should be more or equals 5 and Stock should be more or equals 10", groups={"costAndStockConstraint"}
+ * )
  */
 class Product
 {
+
+    const MIN_VALID_COST = 5;
+    const MIN_VALID_STOCK = 10;
     /**
      * @var int
      *
@@ -36,7 +45,6 @@ class Product
      *
      * @Assert\NotBlank(message="Product description should not be blank");
      * @Assert\Type(type="string")
-     *
      * @ORM\Column(name="productDesc", type="string", length=255)
      */
     private $productDesc;
@@ -91,7 +99,7 @@ class Product
      * @Assert\Type(type="numeric", message="Cost must be numeric and has type float")
      * @Assert\LessThan(value=1000, message="Cost should be less then 1000")
      *
-     * @ORM\Column(name="cost", type="float", options={"unsigned"=true})
+     * @ORM\Column(name="cost", type="decimal", options={"unsigned"=true})
      */
     private $cost;
 
@@ -100,6 +108,12 @@ class Product
      */
     public function __construct()
     {
+        /*if(isset($init)) {
+            $this->productDesc = $init['productDesc'];
+            $this->productName = $init['productName'];
+            $this->productCode = $init['productCode'];
+
+        }*/
         $this->createdAt = new \DateTime();
         $this->doStuffOnPreUpdate();
     }
@@ -109,6 +123,14 @@ class Product
     public function doStuffOnPreUpdate()
     {
         $this->updatedAt = time();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isValidCostAndStock()
+    {
+        return $this->cost >= self::MIN_VALID_COST || $this->stock >= self::MIN_VALID_STOCK;
     }
 
     /**
@@ -240,7 +262,7 @@ class Product
     }
 
     /**
-     * @return float
+     * @return double
      */
     public function getCost(): float
     {
@@ -248,7 +270,7 @@ class Product
     }
 
     /**
-     * @param float $cost
+     * @param double $cost
      */
     public function setCost(float $cost)
     {

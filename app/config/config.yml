@@ -1,5 +1,6 @@
 imports:
     - { resource: parameters.yml }
+    - { resource: csv-parser-mapping.yml }
     - { resource: security.yml }
     - { resource: services.yml }
 

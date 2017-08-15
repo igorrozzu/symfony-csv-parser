@@ -3,12 +3,12 @@
  * Created by PhpStorm.
  * User: i.razumovsky
  * Date: 8/8/17
- * Time: 1:48 PM
+ * Time: 1:48 PM.
  */
 
 namespace AppBundle\Service;
 
-
+use AppBundle\Entity\Product;
 use AppBundle\Helper\ImportHelper;
 use Ddeboer\DataImport\Reader\CsvReader;
 use Ddeboer\DataImport\Result;
@@ -16,12 +16,9 @@ use Ddeboer\DataImport\Step\FilterStep;
 use Ddeboer\DataImport\Step\MappingStep;
 use Ddeboer\DataImport\Step\ValidatorStep;
 use Ddeboer\DataImport\Step\ValueConverterStep;
-use Ddeboer\DataImport\Writer;
 use Doctrine\ORM\EntityManager;
-use Ddeboer\DataImport\Filter\CallbackFilter;
 use Symfony\Component\Validator\Validator\ValidatorInterface as Validator;
 use Ddeboer\DataImport\Workflow\StepAggregator as Workflow;
-use Symfony\Component\Validator\Constraints as Assert;
 
 class ImportService
 {
@@ -29,10 +26,8 @@ class ImportService
     private $validator;
     private $em;
     private $skippedRows = 0;
-    private $_exceptions = [];
-
-    const MIN_VALID_COST = 5;
-    const MIN_VALID_STOCK = 10;
+    private $exceptions = [];
+    private $mapping;
 
     public function __construct(ImportHelper $helper, Validator $validator, EntityManager $em)
     {
@@ -48,7 +43,8 @@ class ImportService
         if(isset($writer)) {
             $workflow->addWriter($writer);
         }
-        $mapping = new MappingStep($this->helper->getMapping());
+
+        $mapping = new MappingStep($this->mapping);
 
         $converter = new ValueConverterStep();
         $converter->add('[dateDiscontinued]', function ($dateDiscontinued) {
@@ -63,15 +59,20 @@ class ImportService
             }
         }
         $filter = new FilterStep();
-        $costAndStockfilter = function ($data)  {
-            if ($data['cost'] < self::MIN_VALID_COST && $data['stock'] < self::MIN_VALID_STOCK) {
-                $this->skippedRows++;
-                $this->_exceptions[] = new \Exception(
-                    sprintf('Cost must be less then %d and stock must be less then %d',
-                        self::MIN_VALID_COST, self::MIN_VALID_STOCK)
-                );
+        $product = new Product();
+        $costAndStockfilter = function ($data) use ($product)  {
+            $product->setCost((float) $data['cost']);
+            $product->setStock($data['stock']);
+            $errors = $this->validator->validate($product, null, ['costAndStockConstraint']);
+            if ($errors->count() > 0) {
+                ++$this->skippedRows;
+                foreach ($errors as $error) {
+                    $this->exceptions[] = $error;
+                }
+
                 return false;
             }
+
             return true;
         };
         $filter->add($costAndStockfilter);
@@ -99,7 +100,7 @@ class ImportService
      */
     public function getExceptions(): array
     {
-        return $this->_exceptions;
+        return $this->exceptions;
     }
 
     /**
@@ -110,5 +111,11 @@ class ImportService
         return $this->helper;
     }
 
-
+    /**
+     * @param mixed $mapping
+     */
+    public function setMapping($mapping)
+    {
+        $this->mapping = $mapping;
+    }
 }

@@ -19,6 +19,8 @@ class ImportHelperTest extends WebTestCase
         if($this->importer === null) {
             $kernel = static::bootKernel();
             $this->importer = $kernel->getContainer()->get('app.import');
+            $mapping = $kernel->getContainer()->getParameter('mapping');
+            $this->importer->setMapping($mapping);
         }
         return $this->importer;
     }

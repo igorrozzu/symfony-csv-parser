@@ -58,11 +58,6 @@ class ImportHelperTest extends WebTestCase
         $this->assertNull($writer);
     }
 
-    public function testGetMappingPositive()
-    {
-        $mapping = $this->getHelper()->getMapping();
-        $this->assertInternalType('array', $mapping);
-    }
 
     public function testGetRulesPositive()
     {

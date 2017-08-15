@@ -8,6 +8,7 @@ use AppBundle\Entity\Product;
 use Ddeboer\DataImport\Reader\CsvReader;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
+use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Validator\RecursiveValidator as Validator;
 
 
@@ -48,17 +49,6 @@ class ImportHelper
         return $doctrineWriter;
     }
 
-    public function getMapping(): array
-    {
-        return [
-            '[Product Code]' => '[productCode]',
-            '[Product Name]' => '[productName]',
-            '[Product Description]' => '[productDesc]',
-            '[Stock]' => '[stock]',
-            '[Cost in GBP]' => '[cost]',
-            '[Discontinued]' => '[dateDiscontinued]',
-        ];
-    }
 
     public function getRules(): array
     {

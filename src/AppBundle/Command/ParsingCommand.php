@@ -4,7 +4,6 @@ namespace AppBundle\Command;
 
 use AppBundle\Service\ImportService;
 use Ddeboer\DataImport\Result;
-use Doctrine\DBAL\Exception\InvalidFormatFileException;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
@@ -37,18 +36,23 @@ class ParsingCommand extends ContainerAwareCommand
             $reader = $helper->getReader($fileName);
         } catch (\Exception $e) {
             $this->output->writeln($e->getMessage());
+
             return false;
         }
         $writer = $helper->getDoctrineWriter($testMode, 'AppBundle:Product');
 
         $importer = $this->getContainer()->get('app.import');
+        $mapping = $this->getContainer()->getParameter('mapping');
+        $importer->setMapping($mapping);
         try {
             $result = $importer->process($reader, $writer);
         } catch (UniqueConstraintViolationException $e) {
             $this->output->writeln('Dublicate Product Code field');
+
             return false;
         } catch (\Exception $e) {
             $this->output->writeln($e->getMessage());
+
             return false;
         }
         $this->output->writeln(sprintf("Total processed count: %d \n Success count: %d \n Failed count: %d \n",
@@ -57,6 +61,7 @@ class ParsingCommand extends ContainerAwareCommand
             $result->getErrorCount() + $importer->getSkippedRows()
         ));
         $this->printReport($result, $importer);
+
         return true;
     }
 
@@ -68,13 +73,13 @@ class ParsingCommand extends ContainerAwareCommand
             $message .= 'All data is valid. The import was successful';
         } else {
             foreach ($result->getExceptions() as $exception) {
-                $message .= $exception->getLineNumber() + $counter++ . " row, invalid data:\n";
+                $message .= $exception->getLineNumber() + $counter++." row, invalid data:\n";
                 foreach ($exception->getViolations() as $violation) {
-                    $message .= "\t" . $violation->getMessage() . "\n";
+                    $message .= "\t".$violation->getMessage()."\n";
                 }
             }
             foreach ($service->getExceptions() as $exception) {
-                $message .= $exception->getMessage() . "\n";
+                $message .= $exception->getMessage()."\n";
             }
         }
 
