@@ -12,15 +12,12 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\HasLifecycleCallbacks()
  * @ORM\Entity(repositoryClass="AppBundle\Repository\ProductRepository")
  * @Assert\Expression(
- *     "this.isValidCostAndStock()",
+ *     "this.getCost() >= 5 or this.getStock() >= 10",
  *     message="Cost should be more or equals 5 and Stock should be more or equals 10", groups={"costAndStockConstraint"}
  * )
  */
 class Product
 {
-
-    const MIN_VALID_COST = 5;
-    const MIN_VALID_STOCK = 10;
     /**
      * @var int
      *
@@ -78,7 +75,7 @@ class Product
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="stmTimestamp", type="integer")
+     * @ORM\Column(name="stmTimestamp", type="datetime", nullable=true)
      */
     private $updatedAt;
 
@@ -108,12 +105,6 @@ class Product
      */
     public function __construct()
     {
-        /*if(isset($init)) {
-            $this->productDesc = $init['productDesc'];
-            $this->productName = $init['productName'];
-            $this->productCode = $init['productCode'];
-
-        }*/
         $this->createdAt = new \DateTime();
         $this->doStuffOnPreUpdate();
     }
@@ -122,15 +113,7 @@ class Product
 
     public function doStuffOnPreUpdate()
     {
-        $this->updatedAt = time();
-    }
-
-    /**
-     * @return bool
-     */
-    public function isValidCostAndStock()
-    {
-        return $this->cost >= self::MIN_VALID_COST || $this->stock >= self::MIN_VALID_STOCK;
+        $this->updatedAt = new \DateTime();
     }
 
     /**

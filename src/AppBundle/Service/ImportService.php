@@ -40,7 +40,7 @@ class ImportService
     {
         $workflow = new Workflow($reader);
         $workflow->setSkipItemOnFailure(true);
-        if(isset($writer)) {
+        if (isset($writer)) {
             $workflow->addWriter($writer);
         }
 
@@ -60,7 +60,7 @@ class ImportService
         }
         $filter = new FilterStep();
         $product = new Product();
-        $costAndStockfilter = function ($data) use ($product)  {
+        $costAndStockfilter = function ($data) use ($product) {
             $product->setCost((float) $data['cost']);
             $product->setStock($data['stock']);
             $errors = $this->validator->validate($product, null, ['costAndStockConstraint']);

@@ -55,7 +55,8 @@ class ParsingCommand extends ContainerAwareCommand
 
             return false;
         }
-        $this->output->writeln(sprintf("Total processed count: %d \n Success count: %d \n Failed count: %d \n",
+        $this->output->writeln(sprintf(
+            "Total processed count: %d \n Success count: %d \n Failed count: %d \n",
             $result->getTotalProcessedCount() + $importer->getSkippedRows(),
             $result->getSuccessCount(),
             $result->getErrorCount() + $importer->getSkippedRows()
@@ -69,7 +70,7 @@ class ParsingCommand extends ContainerAwareCommand
     {
         $counter = 1;
         $message = "Report: \n";
-        if($result->getExceptions()->count() === 0 && count($service->getExceptions()) === 0) {
+        if ($result->getExceptions()->count() === 0 && count($service->getExceptions()) === 0) {
             $message .= 'All data is valid. The import was successful';
         } else {
             foreach ($result->getExceptions() as $exception) {

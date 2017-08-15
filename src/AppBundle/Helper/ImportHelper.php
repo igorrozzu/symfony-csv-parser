@@ -2,15 +2,12 @@
 
 namespace AppBundle\Helper;
 
-
 use AppBundle\Component\DoctrineWriter;
 use AppBundle\Entity\Product;
 use Ddeboer\DataImport\Reader\CsvReader;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
-use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Validator\RecursiveValidator as Validator;
-
 
 class ImportHelper
 {
@@ -30,6 +27,7 @@ class ImportHelper
             if ($file->getExtension() === 'csv') {
                 $csvReader = new CsvReader($file);
                 $csvReader->setHeaderRowNumber(0);
+
                 return $csvReader;
             } else {
                 throw new FileNotFoundException('Invalid format file. Need csv format');
@@ -39,16 +37,15 @@ class ImportHelper
         }
     }
 
-    public function getDoctrineWriter(bool $testMode , $entityName)
+    public function getDoctrineWriter(bool $testMode, $entityName)
     {
         $doctrineWriter = null;
-        if(!$testMode) {
+        if (!$testMode) {
             $doctrineWriter = new DoctrineWriter($this->em, $entityName);
         }
 
         return $doctrineWriter;
     }
-
 
     public function getRules(): array
     {
@@ -59,6 +56,7 @@ class ImportHelper
                 $constraints[$attribute][] = $constraint;
             }
         }
+
         return $constraints;
     }
 }
