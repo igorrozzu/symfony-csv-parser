@@ -1,14 +1,9 @@
 <?php
 
-
 namespace Tests\AppBundle\Service;
 
-use Ddeboer\DataImport\Reader;
-use Ddeboer\DataImport\Writer;
-use AppBundle\Helper\ImportHelper;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-
 
 class ImportHelperTest extends WebTestCase
 {
@@ -16,12 +11,13 @@ class ImportHelperTest extends WebTestCase
 
     private function getImporter()
     {
-        if($this->importer === null) {
+        if ($this->importer === null) {
             $kernel = static::bootKernel();
             $this->importer = $kernel->getContainer()->get('app.import');
             $mapping = $kernel->getContainer()->getParameter('mapping');
             $this->importer->setMapping($mapping);
         }
+
         return $this->importer;
     }
 
@@ -56,5 +52,4 @@ class ImportHelperTest extends WebTestCase
         $writer = $this->getImporter()->getHelper()->getDoctrineWriter(false, 'AppBundle:Product');
         $result = $this->getImporter()->process($reader, $writer);
     }
-
 }
